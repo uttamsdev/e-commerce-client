@@ -1,0 +1,4 @@
+.shop-container{
+    display: grid;
+    grid-template-columns: 4fr 1fr; /* 4fr mane 4 vag 1 fr mane 1 vag total 5 vag er ekjon 4 vag nibe r ekhon 1 vag niibe */
+}

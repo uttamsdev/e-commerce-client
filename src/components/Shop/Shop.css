@@ -6,4 +6,11 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-gap: 45px;
+    margin: 100px 100px;
+}
+
+@media screen  and (max-width:1100px) {
+    .product-container{
+        grid-template-columns: repeat(2,1fr);
+    }    
 }

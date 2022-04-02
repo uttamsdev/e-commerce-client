@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import useProducts from "../../hooks/useProducts";
 import { addToDb, getStoredCart } from "../../utilities/fakedb";
 import Cart from "../Cart/Cart";
 import Product from "../Product/Product";
 import './Shop.css'
 
 const Shop = () => {
-    const [products, setProducts] = useState([])
+    const [products, setProducts] = useProducts();
     const [cart, setCart] = useState([])
-    useEffect(()=>{
-        fetch('products.json')
-        .then(response => response.json())
-        .then(data => setProducts(data))
-    },[])
 
     //load data from local storage 
     useEffect(()=>{  //use effect for load local storage data
@@ -47,6 +44,12 @@ const Shop = () => {
         addToDb(selectedProduct.id); //add prodduct details to localStorage
 
     }
+
+    //useNavigate 
+    const navigate = useNavigate();
+    const reviewOrderNavigate = () => {
+        navigate('/orders');
+    }
     return (
         <div className="shop-container">
             <div className="product-container">
@@ -60,7 +63,11 @@ const Shop = () => {
             </div>
 
             <div className="cart-container">
-               <Cart cart = {cart}></Cart>
+               <Cart cart = {cart}>
+                
+                       <button onClick={reviewOrderNavigate}>Review Order</button>
+                   
+               </Cart>
             </div>
         </div>
     )

@@ -17,5 +17,7 @@ export default auth;
 10. if user is created redirect to the expected page.
 11. useSignInWithEmailAndPassword from react firebase hooks
 
+12. create require auth component  => user login thakle jete dibo na takle login page e jabe..
+13. protected component
 
 */

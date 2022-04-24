@@ -4,72 +4,113 @@ import useProducts from "../../hooks/useProducts";
 import { addToDb, getStoredCart } from "../../utilities/fakedb";
 import Cart from "../Cart/Cart";
 import Product from "../Product/Product";
-import './Shop.css'
+import "./Shop.css";
 
 const Shop = () => {
-    const [products, setProducts] = useProducts();
-    const [cart, setCart] = useState([])
+  
+  const [cart, setCart] = useState([]);
+  const [products, setProducts] = useState([]);
+    //kon page e achi seta mark korte
+    const [page, setPage] = useState(0);
+    //page size 
+    const [pageSize, setPageSize] = useState(10);
+  useEffect(() => {
+    fetch(`http://localhost:5000/product?page=${page}&size=${pageSize}`)
+      .then((response) => response.json())
+      .then((data) => setProducts(data));
+  }, [page, pageSize]);
 
-    //load data from local storage 
-    useEffect(()=>{  //use effect for load local storage data
-        const storedCart = getStoredCart();
-        console.log(storedCart);
-        const savedCart = [];
-        for(const id in storedCart){
-            const addedProducts = products.find(product => product.id === id);
-            if(addedProducts){
-                const quantity = storedCart[id]; // getting quantiy of id key.. 
-                addedProducts.quantity = quantity;
-                savedCart.push(addedProducts);
+  //load data from local storage
+  useEffect(() => {
+    //use effect for load local storage data
+    const storedCart = getStoredCart();
+    console.log(storedCart);
+    const savedCart = [];
+    for (const id in storedCart) {
+      const addedProducts = products.find((product) => product._id === id);
+      if (addedProducts) {
+        const quantity = storedCart[id]; // getting quantiy of id key..
+        addedProducts.quantity = quantity;
+        savedCart.push(addedProducts);
+      }
+    }
+    setCart(savedCart);
+  }, [products]); // useEfferct ekbar call hoi just dependecney dewai porducts er value change howai useEffect bar bar call korbe jkn ei products er man change hoi..
+
+  const handleAddToCart = (selectedProduct) => {
+    // console.log(product);
+    let newCart = [];
+    const exists = cart.find((product) => product._id === selectedProduct._id);
+    if (!exists) {
+      selectedProduct.quantity = 1;
+      newCart = [...cart, selectedProduct];
+    } else {
+      const rest = cart.filter((product) => product._id !== selectedProduct._id);
+      exists.quantity = exists.quantity + 1;
+      newCart = [...rest, exists];
+    }
+
+    setCart(newCart);
+    addToDb(selectedProduct._id); //add prodduct details to localStorage
+  };
+
+  //useNavigate
+  const navigate = useNavigate();
+  const reviewOrderNavigate = () => {
+    navigate("/orders");
+  };
+
+
+  //handle pageCOunt
+  const [pageCount, setPageCount] = useState(0);
+  useEffect(()=>{
+      fetch('http://localhost:5000/productCount')
+      .then(res => res.json())
+      .then(data => {
+          const count = data.count;
+          const pages = Math.ceil(count/10);
+          setPageCount(pages);
+      })
+  },[])
+
+
+  console.log(pageCount);
+  return (
+    <div className="shop-container">
+      <div className="product-container">
+        {products.map((product) => (
+          <Product
+            product={product}
+            key={product._id}
+            handleAddToCart={handleAddToCart}
+          ></Product>
+        ))}
+
+        <div className="pagination">
+            {
+                [...Array(pageCount).keys()].map(number => <button
+                className={page===number ? 'selected' : ''}
+                onClick={()=>setPage(number)}
+                >{number+1}</button>)
             }
-        }
-        setCart(savedCart);
-    },[products]) // useEfferct ekbar call hoi just dependecney dewai porducts er value change howai useEffect bar bar call korbe jkn ei products er man change hoi..
+            {/* <button>HI</button> */}
 
-    const handleAddToCart = (selectedProduct) => {
-        // console.log(product);
-        let newCart = [];
-        const exists = cart.find(product => product.id === selectedProduct.id)
-        if(!exists){
-            selectedProduct.quantity = 1;
-            newCart = [...cart,  selectedProduct];
-        }
-        else{
-            const rest = cart.filter(product => product.id !== selectedProduct.id);
-            exists.quantity = exists.quantity + 1;
-            newCart = [...rest, exists];
-        }
-
-        setCart(newCart);
-        addToDb(selectedProduct.id); //add prodduct details to localStorage
-
-    }
-
-    //useNavigate 
-    const navigate = useNavigate();
-    const reviewOrderNavigate = () => {
-        navigate('/orders');
-    }
-    return (
-        <div className="shop-container">
-            <div className="product-container">
-               {
-                   products.map(product => <Product 
-                    product={product}
-                     key={product.id}
-                     handleAddToCart = {handleAddToCart}
-                     ></Product>)
-               }
-            </div>
-
-            <div className="cart-container">
-               <Cart cart = {cart}>
-                
-                       <button onClick={reviewOrderNavigate}>Review Order</button>
-                   
-               </Cart>
-            </div>
+            
+            <select onChange={e => setPageSize(e.target.value)}>
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+            </select>
         </div>
-    )
-}
+      </div>
+
+      <div className="cart-container">
+        <Cart cart={cart}>
+          <button onClick={reviewOrderNavigate}>Review Order</button>
+        </Cart>
+      </div>
+    </div>
+  );
+};
 export default Shop;
